@@ -142,6 +142,12 @@ void Renderer::render() {
         }
     }
 
+    if (!players_.empty()) {
+        for (const auto &player: players_) {
+            shader_->drawModel(player);
+        }
+    }
+
     // Present the rendered image. This is an implicit glFlush.
     auto swapResult = eglSwapBuffers(display_, surface_);
     assert(swapResult == EGL_TRUE);
@@ -251,15 +257,39 @@ void Renderer::updateRenderArea() {
         height_ = height;
         glViewport(0, 0, width, height);
 
+        mScreenWidth = width;
+
         // make sure that we lazily recreate the projection matrix before we render
         shaderNeedsNewProjectionMatrix_ = true;
     }
+}
+
+Model* spawnModel(
+        float x,
+        float y,
+        float width,
+        float height,
+        const std::shared_ptr<TextureAsset> spTexture){
+
+    std::vector<Vertex> vertices = {
+            // 第1引数のVector3は画面における座標を指定するための引数 第2引数のVector2は画像のどこからどこまでを読み込む、みたいな意味の引数
+            Vertex(Vector3{(float)(width + x), (float)(height + y), 0}, Vector2{0, 0}), // 0
+            Vertex(Vector3{(float)(-1 * width + x), (float)(height + y), 0}, Vector2{1, 0}), // 1
+            Vertex(Vector3{(float)(-1 * width + x), (float)(-1 * height + y), 0}, Vector2{1, 1}), // 2
+            Vertex(Vector3{(float)(width + x), (float)(-1 * height + y), 0}, Vector2{0, 1}) // 3
+    };
+    std::vector<Index> indices = {
+            0, 1, 2, 0, 2, 3
+    };
+
+    return new Model(vertices, indices, spTexture);
 }
 
 /**
  * @brief Create any demo models we want for this demo.
  */
 void Renderer::createModels() {
+    auto playerPosition = Vector2{0, -1.5};
     /*
      * This is a square:
      * 0 --- 1
@@ -269,10 +299,11 @@ void Renderer::createModels() {
      * 3 --- 2
      */
     std::vector<Vertex> vertices = {
-            Vertex(Vector3{1, 1, 0}, Vector2{0, 0}), // 0
-            Vertex(Vector3{-1, 1, 0}, Vector2{1, 0}), // 1
-            Vertex(Vector3{-1, -1, 0}, Vector2{1, 1}), // 2
-            Vertex(Vector3{1, -1, 0}, Vector2{0, 1}) // 3
+            // 第1引数のVector3は画面における座標を指定するための引数 第2引数のVector2は画像のどこからどこまでを読み込む、みたいな意味の引数
+            Vertex(Vector3{(float)(0.2 + playerPosition.x), (float)(0.2 + playerPosition.y), 0}, Vector2{0, 0}), // 0
+            Vertex(Vector3{(float)(-0.2 + playerPosition.x), (float)(0.2 + playerPosition.y), 0}, Vector2{1, 0}), // 1
+            Vertex(Vector3{(float)(-0.2 + playerPosition.x), (float)(-0.2 + playerPosition.y), 0}, Vector2{1, 1}), // 2
+            Vertex(Vector3{(float)(0.2 + playerPosition.x), (float)(-0.2 + playerPosition.y), 0}, Vector2{0, 1}) // 3
     };
     std::vector<Index> indices = {
             0, 1, 2, 0, 2, 3
@@ -286,7 +317,18 @@ void Renderer::createModels() {
     auto spAndroidRobotTexture = TextureAsset::loadAsset(assetManager, "android_robot.png");
 
     // Create a model and put it in the back of the render list.
-    models_.emplace_back(vertices, indices, spAndroidRobotTexture);
+    //models_.emplace_back(vertices, indices, spAndroidRobotTexture);
+    players_.emplace_back(vertices, indices, spAndroidRobotTexture);
+
+    players_[0].setPosition(playerPosition.x, playerPosition.y);
+
+    aout << "playerPosition! X: " << players_[0].getX() << "  Y:" << players_[0].getY() << std::endl;
+}
+
+void Renderer::updatePlayerModel() {
+    if(!players_.empty()){
+        players_[0].setPosition(mPlayerX, players_[0].getY());
+    }
 }
 
 void Renderer::handleInput() {
@@ -312,10 +354,12 @@ void Renderer::handleInput() {
         auto x = GameActivityPointerAxes_getX(&pointer);
         auto y = GameActivityPointerAxes_getY(&pointer);
 
+
         // determine the action type and process the event accordingly.
         switch (action & AMOTION_EVENT_ACTION_MASK) {
             case AMOTION_EVENT_ACTION_DOWN:
             case AMOTION_EVENT_ACTION_POINTER_DOWN:
+
                 aout << "(" << pointer.id << ", " << x << ", " << y << ") "
                      << "Pointer Down";
                 break;
@@ -338,6 +382,19 @@ void Renderer::handleInput() {
                     pointer = motionEvent.pointers[index];
                     x = GameActivityPointerAxes_getX(&pointer);
                     y = GameActivityPointerAxes_getY(&pointer);
+
+                    if (mScreenWidth == 0) continue;
+
+                    // ピクセル → NDC（-1.0 〜 1.0）へ変換
+                    float ndcX = (static_cast<float>(x) / static_cast<float>(mScreenWidth)) * 2.0f - 1.0f;
+
+                    // 範囲制限（プレイヤーが画面外に出ないように）
+                    ndcX = std::max(-0.9f, std::min(0.9f, ndcX));
+
+                    mPlayerX = ndcX;
+                    updatePlayerModel();
+
+
                     aout << "(" << pointer.id << ", " << x << ", " << y << ")";
 
                     if (index != (motionEvent.pointerCount - 1)) aout << ",";

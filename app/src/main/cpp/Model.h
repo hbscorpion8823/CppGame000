@@ -57,10 +57,37 @@ public:
         return *spTexture_;
     }
 
+    inline void setPosition(float x, float y) {
+        std::vector<Vertex> vertices = {
+                // 第1引数のVector3は画面における座標を指定するための引数 第2引数のVector2は画像のどこからどこまでを読み込む、みたいな意味の引数
+                Vertex(Vector3{(float)(0.2 + x), (float)(0.2 + y), 0}, Vector2{0, 0}), // 0
+                Vertex(Vector3{(float)(-0.2 + x), (float)(0.2 + y), 0}, Vector2{1, 0}), // 1
+                Vertex(Vector3{(float)(-0.2 + x), (float)(-0.2 + y), 0}, Vector2{1, 1}), // 2
+                Vertex(Vector3{(float)(0.2 + x), (float)(-0.2 + y), 0}, Vector2{0, 1}) // 3
+        };
+        vertices_ = vertices;
+
+        positionX = x;
+        positionY = y;
+    }
+
+
+    [[nodiscard]] inline float getX() const {
+        return positionX;
+    }
+
+    [[nodiscard]] inline float getY() const {
+        return positionY;
+    }
+
 private:
     std::vector<Vertex> vertices_;
     std::vector<Index> indices_;
     std::shared_ptr<TextureAsset> spTexture_;
+    float positionX;
+    float positionY;
+    float width;
+    float height;
 };
 
 #endif //ANDROIDGLINVESTIGATIONS_MODEL_H

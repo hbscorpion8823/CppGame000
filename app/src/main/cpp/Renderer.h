@@ -39,6 +39,8 @@ public:
      */
     void render();
 
+    void updatePlayerModel();  // モデルに座標を反映する
+
 private:
     /*!
      * Performs necessary OpenGL initialization. Customize this if you want to change your EGL
@@ -69,6 +71,11 @@ private:
 
     std::unique_ptr<Shader> shader_;
     std::vector<Model> models_;
+    std::vector<Model>  players_;
+
+    float mPlayerX = 0.0f; // プレイヤーの位置 [-1.0 ~ 1.0]
+    int mScreenWidth = 1;  // 初期値を1にしてゼロ除算回避
+
 };
 
 #endif //ANDROIDGLINVESTIGATIONS_RENDERER_H
