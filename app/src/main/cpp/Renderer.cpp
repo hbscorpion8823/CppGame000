@@ -144,7 +144,7 @@ void Renderer::render() {
 
     if (!players_.empty()) {
         for (const auto &player: players_) {
-            shader_->drawModel(player);
+            shader_->drawModel(*player);
         }
     }
 
@@ -264,7 +264,7 @@ void Renderer::updateRenderArea() {
     }
 }
 
-Model Renderer::spawnModel(
+Model* Renderer::spawnModel(
         float x,
         float y,
         float width,
@@ -282,8 +282,7 @@ Model Renderer::spawnModel(
             0, 1, 2, 0, 2, 3
     };
 
-    Model* md = new Model(vertices, indices, spTexture);
-    return *md;
+    return new Model(vertices, indices, spTexture);
 }
 
 /**
@@ -323,14 +322,14 @@ void Renderer::createModels() {
     players_.push_back(spawnModel(0, -1.5, 0.2, 0.2, spAndroidRobotTexture));
 
 
-    players_[0].setPosition(playerPosition.x, playerPosition.y);
+    players_[0]->setPosition(playerPosition.x, playerPosition.y);
 
-    aout << "playerPosition! X: " << players_[0].getX() << "  Y:" << players_[0].getY() << std::endl;
+    aout << "playerPosition! X: " << players_[0]->getX() << "  Y:" << players_[0]->getY() << std::endl;
 }
 
 void Renderer::updatePlayerModel() {
     if(!players_.empty()){
-        players_[0].setPosition(mPlayerX, players_[0].getY());
+        players_[0]->setPosition(mPlayerX, players_[0]->getY());
     }
 }
 

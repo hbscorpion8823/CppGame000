@@ -41,7 +41,7 @@ public:
 
     void updatePlayerModel();  // モデルに座標を反映する
 
-    Model spawnModel(float x, float y, float width, float height, std::shared_ptr<TextureAsset> spTexture);
+    Model* spawnModel(float x, float y, float width, float height, std::shared_ptr<TextureAsset> spTexture);
 
 private:
     /*!
@@ -73,7 +73,7 @@ private:
 
     std::unique_ptr<Shader> shader_;
     std::vector<Model> models_;
-    std::vector<Model>  players_;
+    std::vector<Model*>  players_;
 
     float mPlayerX = 0.0f; // プレイヤーの位置 [-1.0 ~ 1.0]
     int mScreenWidth = 1;  // 初期値を1にしてゼロ除算回避
