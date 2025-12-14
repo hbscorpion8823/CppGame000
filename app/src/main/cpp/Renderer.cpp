@@ -264,7 +264,7 @@ void Renderer::updateRenderArea() {
     }
 }
 
-Model* spawnModel(
+Model Renderer::spawnModel(
         float x,
         float y,
         float width,
@@ -282,7 +282,8 @@ Model* spawnModel(
             0, 1, 2, 0, 2, 3
     };
 
-    return new Model(vertices, indices, spTexture);
+    Model* md = new Model(vertices, indices, spTexture);
+    return *md;
 }
 
 /**
@@ -318,7 +319,9 @@ void Renderer::createModels() {
 
     // Create a model and put it in the back of the render list.
     //models_.emplace_back(vertices, indices, spAndroidRobotTexture);
-    players_.emplace_back(vertices, indices, spAndroidRobotTexture);
+    //players_.emplace_back(vertices, indices, spAndroidRobotTexture);
+    players_.push_back(spawnModel(0, -1.5, 0.2, 0.2, spAndroidRobotTexture));
+
 
     players_[0].setPosition(playerPosition.x, playerPosition.y);
 

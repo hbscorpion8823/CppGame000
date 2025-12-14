@@ -41,6 +41,8 @@ public:
 
     void updatePlayerModel();  // モデルに座標を反映する
 
+    Model spawnModel(float x, float y, float width, float height, std::shared_ptr<TextureAsset> spTexture);
+
 private:
     /*!
      * Performs necessary OpenGL initialization. Customize this if you want to change your EGL
