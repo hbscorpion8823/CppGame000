@@ -41,6 +41,8 @@ public:
 
     void updatePlayerModel();  // モデルに座標を反映する
 
+    void updateBullets();        // 弾を上に移動
+
     Model* spawnModel(float x, float y, float width, float height, std::shared_ptr<TextureAsset> spTexture);
 
 private:
@@ -62,6 +64,8 @@ private:
      */
     void createModels();
 
+    void fireBullet();            // 弾を1つ生成して発射
+
     android_app *app_;
     EGLDisplay display_;
     EGLSurface surface_;
@@ -74,6 +78,7 @@ private:
     std::unique_ptr<Shader> shader_;
     std::vector<Model> models_;
     std::vector<Model*>  players_;
+    std::vector<Model*>  playerBullets_;
 
     float mPlayerX = 0.0f; // プレイヤーの位置 [-1.0 ~ 1.0]
     int mScreenWidth = 1;  // 初期値を1にしてゼロ除算回避

@@ -110,6 +110,9 @@ void android_main(struct android_app *pApp) {
             // Process game input
             pRenderer->handleInput();
 
+            // 敵や弾のような、プレイヤーが動かさないものに関連するupdate処理
+            pRenderer->updateBullets();
+
             // Render a frame
             pRenderer->render();
         }

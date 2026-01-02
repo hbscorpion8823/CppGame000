@@ -60,10 +60,10 @@ public:
     inline void setPosition(float x, float y) {
         std::vector<Vertex> vertices = {
                 // 第1引数のVector3は画面における座標を指定するための引数 第2引数のVector2は画像のどこからどこまでを読み込む、みたいな意味の引数
-                Vertex(Vector3{(float)(0.2 + x), (float)(0.2 + y), 0}, Vector2{0, 0}), // 0
-                Vertex(Vector3{(float)(-0.2 + x), (float)(0.2 + y), 0}, Vector2{1, 0}), // 1
-                Vertex(Vector3{(float)(-0.2 + x), (float)(-0.2 + y), 0}, Vector2{1, 1}), // 2
-                Vertex(Vector3{(float)(0.2 + x), (float)(-0.2 + y), 0}, Vector2{0, 1}) // 3
+                Vertex(Vector3{(float)(width + x), (float)(height + y), 0}, Vector2{0, 0}), // 0
+                Vertex(Vector3{(float)(-1 * width + x), (float)(height + y), 0}, Vector2{1, 0}), // 1
+                Vertex(Vector3{(float)(-1 * width + x), (float)(-1 * height + y), 0}, Vector2{1, 1}), // 2
+                Vertex(Vector3{(float)(width + x), (float)(-1 * height + y), 0}, Vector2{0, 1}) // 3
         };
         vertices_ = vertices;
 
@@ -71,6 +71,10 @@ public:
         positionY = y;
     }
 
+    inline void setWidthAndHeight(float width_, float height_) {
+        width = width_;
+        height = height_;
+    }
 
     [[nodiscard]] inline float getX() const {
         return positionX;

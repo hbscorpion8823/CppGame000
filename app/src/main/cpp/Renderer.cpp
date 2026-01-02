@@ -147,6 +147,11 @@ void Renderer::render() {
             shader_->drawModel(*player);
         }
     }
+    if (!playerBullets_.empty()) {
+        for (const auto &bullet: playerBullets_) {
+            shader_->drawModel(*bullet);
+        }
+    }
 
     // Present the rendered image. This is an implicit glFlush.
     auto swapResult = eglSwapBuffers(display_, surface_);
@@ -281,8 +286,11 @@ Model* Renderer::spawnModel(
     std::vector<Index> indices = {
             0, 1, 2, 0, 2, 3
     };
+    auto md = new Model(vertices, indices, spTexture);
+    md->setWidthAndHeight(width, height);
+    md->setPosition(x, y);
 
-    return new Model(vertices, indices, spTexture);
+    return md;
 }
 
 /**
@@ -374,6 +382,7 @@ void Renderer::handleInput() {
             case AMOTION_EVENT_ACTION_POINTER_UP:
                 aout << "(" << pointer.id << ", " << x << ", " << y << ") "
                      << "Pointer Up";
+                fireBullet();
                 break;
 
             case AMOTION_EVENT_ACTION_MOVE:
@@ -396,7 +405,6 @@ void Renderer::handleInput() {
                     mPlayerX = ndcX;
                     updatePlayerModel();
 
-
                     aout << "(" << pointer.id << ", " << x << ", " << y << ")";
 
                     if (index != (motionEvent.pointerCount - 1)) aout << ",";
@@ -411,6 +419,8 @@ void Renderer::handleInput() {
     }
     // clear the motion input count in this buffer for main thread to re-use.
     android_app_clear_motion_events(inputBuffer);
+
+    updateBullets();
 
     // handle input key events.
     for (auto i = 0; i < inputBuffer->keyEventsCount; i++) {
@@ -434,4 +444,41 @@ void Renderer::handleInput() {
     }
     // clear the key input count too.
     android_app_clear_key_events(inputBuffer);
+}
+
+void Renderer::fireBullet() {
+
+    // bulletをspawnさせる処理
+    if(!players_.empty()) {
+        auto assetManager = app_->activity->assetManager;
+        auto bulletTexture = TextureAsset::loadAsset(assetManager, "chatgpt-bullet.png");
+
+        // X: players_[0]->getX()
+        // Y: players_[0]->getY()
+        playerBullets_.push_back(
+                spawnModel(players_[0]->getX(), players_[0]->getY(), 0.05, 0.1, bulletTexture));
+    }
+}
+
+void Renderer::updateBullets() {
+
+    if(!playerBullets_.empty()){
+        // bulletの位置を更新する処理
+        for (auto it = playerBullets_.begin(); it != playerBullets_.end();) {
+            Model* bullet = *it;
+            float x, y;
+            x = bullet->getX();
+            y = bullet->getY();
+            y += 0.05f;  // 上に移動
+            aout << "bulletY: " << y << std::endl;
+            if (y > 1.1f) {
+                delete bullet; // 画面外なら削除
+                it = playerBullets_.erase(it);
+            } else {
+                bullet->setPosition(x, y);
+                ++it;
+            }
+        }
+    }
+
 }
