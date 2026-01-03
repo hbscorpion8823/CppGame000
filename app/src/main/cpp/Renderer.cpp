@@ -11,6 +11,7 @@
 #include "Utility.h"
 #include "TextureAsset.h"
 
+#include <cstdlib>
 //! executes glGetString and outputs the result to logcat
 #define PRINT_GL_STRING(s) {aout << #s": "<< glGetString(s) << std::endl;}
 
@@ -84,6 +85,8 @@ static constexpr float kProjectionNearPlane = -1.f;
  */
 static constexpr float kProjectionFarPlane = 1.f;
 
+static int frameCount = 0;
+
 Renderer::~Renderer() {
     if (display_ != EGL_NO_DISPLAY) {
         eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
@@ -101,10 +104,20 @@ Renderer::~Renderer() {
 }
 
 void Renderer::render() {
+
+    frameCount++;
+    if (frameCount % 120 == 0) { // 約2秒に1回（60fps想定）
+        createEnemy();
+    }
+
     // Check to see if the surface has changed size. This is _necessary_ to do every frame when
     // using immersive mode as you'll get no other notification that your renderable area has
     // changed.
     updateRenderArea();
+
+    // 敵や弾のような、プレイヤーが動かさないものに関連するupdate処理
+    updateBullets();
+    updateEnemies();
 
     // When the renderable area changes, the projection matrix has to also be updated. This is true
     // even if you change from the sample orthographic projection matrix as your aspect ratio has
@@ -150,6 +163,11 @@ void Renderer::render() {
     if (!playerBullets_.empty()) {
         for (const auto &bullet: playerBullets_) {
             shader_->drawModel(*bullet);
+        }
+    }
+    if (!mEnemies.empty()) {
+        for (const auto &enemy: mEnemies) {
+            shader_->drawModel(*enemy);
         }
     }
 
@@ -420,8 +438,6 @@ void Renderer::handleInput() {
     // clear the motion input count in this buffer for main thread to re-use.
     android_app_clear_motion_events(inputBuffer);
 
-    updateBullets();
-
     // handle input key events.
     for (auto i = 0; i < inputBuffer->keyEventsCount; i++) {
         auto &keyEvent = inputBuffer->keyEvents[i];
@@ -450,13 +466,17 @@ void Renderer::fireBullet() {
 
     // bulletをspawnさせる処理
     if(!players_.empty()) {
-        auto assetManager = app_->activity->assetManager;
-        auto bulletTexture = TextureAsset::loadAsset(assetManager, "chatgpt-bullet.png");
+
+        if(!mBulletTexture){
+            auto assetManager = app_->activity->assetManager;
+            mBulletTexture = TextureAsset::loadAsset(assetManager, "chatgpt-bullet.png");
+        }
+
 
         // X: players_[0]->getX()
         // Y: players_[0]->getY()
         playerBullets_.push_back(
-                spawnModel(players_[0]->getX(), players_[0]->getY(), 0.05, 0.1, bulletTexture));
+                spawnModel(players_[0]->getX(), players_[0]->getY(), 0.05, 0.1, mBulletTexture));
     }
 }
 
@@ -480,5 +500,37 @@ void Renderer::updateBullets() {
             }
         }
     }
+}
 
+void Renderer::createEnemy() {
+    // 画面上部のランダムX位置に配置
+    float x = -0.9f + static_cast<float>(rand()) / RAND_MAX * 1.8f;
+    if(!mEnemyTexture){
+        auto assetManager = app_->activity->assetManager;
+        mEnemyTexture = TextureAsset::loadAsset(assetManager, "enemy.png");
+    }
+    mEnemies.push_back(
+            spawnModel(x, 0.95, 0.2, 0.2, mEnemyTexture));
+}
+
+void Renderer::updateEnemies() {
+    if(!mEnemies.empty()){
+        for (auto it = mEnemies.begin(); it != mEnemies.end();) {
+            Model* enemy = *it;
+
+            float x, y;
+            x = enemy->getX();
+            y = enemy->getY();
+
+            y -= 0.01f; // 下に移動（速度）
+
+            if (y < -1.0f) {
+                delete enemy;
+                it = mEnemies.erase(it);
+            } else {
+                enemy->setPosition(x, y);
+                ++it;
+            }
+        }
+    }
 }

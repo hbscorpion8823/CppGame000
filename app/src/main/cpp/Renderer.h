@@ -45,6 +45,9 @@ public:
 
     Model* spawnModel(float x, float y, float width, float height, std::shared_ptr<TextureAsset> spTexture);
 
+    void createEnemy();
+    void updateEnemies();
+
 private:
     /*!
      * Performs necessary OpenGL initialization. Customize this if you want to change your EGL
@@ -79,9 +82,13 @@ private:
     std::vector<Model> models_;
     std::vector<Model*>  players_;
     std::vector<Model*>  playerBullets_;
+    std::vector<Model*> mEnemies;
 
     float mPlayerX = 0.0f; // プレイヤーの位置 [-1.0 ~ 1.0]
     int mScreenWidth = 1;  // 初期値を1にしてゼロ除算回避
+
+    std::shared_ptr<TextureAsset> mBulletTexture;
+    std::shared_ptr<TextureAsset> mEnemyTexture;
 
 };
 
