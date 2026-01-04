@@ -43,7 +43,7 @@ public:
 
     void updateBullets();        // 弾を上に移動
 
-    Model* spawnModel(float x, float y, float width, float height, std::shared_ptr<TextureAsset> spTexture);
+    static Model* spawnModel(float x, float y, float width, float height, std::shared_ptr<TextureAsset> spTexture);
 
     void createEnemy();
     void updateEnemies();

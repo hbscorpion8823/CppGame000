@@ -340,7 +340,7 @@ void Renderer::createModels() {
     // Note: there is no texture management in this sample, so if you reuse an image be careful not
     // to load it repeatedly. Since you get a shared_ptr you can safely reuse it in many models.
     auto assetManager = app_->activity->assetManager;
-    auto spAndroidRobotTexture = TextureAsset::loadAsset(assetManager, "android_robot.png");
+    auto spAndroidRobotTexture = TextureAsset::loadAsset(assetManager, "player.png");
 
     // Create a model and put it in the back of the render list.
     //models_.emplace_back(vertices, indices, spAndroidRobotTexture);
@@ -469,7 +469,7 @@ void Renderer::fireBullet() {
 
         if(!mBulletTexture){
             auto assetManager = app_->activity->assetManager;
-            mBulletTexture = TextureAsset::loadAsset(assetManager, "chatgpt-bullet.png");
+            mBulletTexture = TextureAsset::loadAsset(assetManager, "bullet.png");
         }
 
 
